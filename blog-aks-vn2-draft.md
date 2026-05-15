@@ -144,5 +144,3 @@ Pair VN2 with traditional node pools, NAP, or Virtual Machine Node Pools for ste
 
 **VN2 expands what AKS can run — more capacity, stronger isolation, per-second economics — without changing the Kubernetes operating model you already use.** Same `kubectl`, same manifests, same GitOps. New ceiling.
 ---
-
-*Hailu Kassa is a Senior Cloud Solution Architect at Microsoft, focused on Azure Kubernetes Service and cloud-native architectures. Prior posts: [A Practical Guide to Autoscaling Web Applications with AKS, KEDA, and MSSQL](https://techcommunity.microsoft.com/t5/user/viewprofilepage/user-id/2436915) and [Autonomous AKS Incident Response with Azure SRE Agent](https://github.com/hailugebru/azure-sre-agents-aks).*
