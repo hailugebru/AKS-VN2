@@ -10,7 +10,7 @@ Azure Kubernetes Service is the platform our enterprise customers trust to run a
 
 In one sentence: **VN2 attaches Azure's shared, serverless container fleet to your AKS cluster as a single, large-scale Kubernetes node** (subject to ACI service limits and regional availability — see [Microsoft Learn](https://learn.microsoft.com/en-us/azure/aks/virtual-nodes) for the current matrix). Pods scheduled to it run as micro-VMs on Azure Container Instances. They appear and behave exactly like any other Kubernetes pod — same `kubectl`, same Helm charts, same Argo CD or Flux pipelines.
 
-If you've used the original AKS virtual nodes (the Virtual Kubelet–based experience), it's worth being explicit: **VN2 is not a rebrand.** It's a new implementation that integrates much more deeply with Kubernetes, lifts most of the prior limitations (init containers, DaemonSet awareness, persistent volume support, managed identity, richer networking, and more), and adds **Confidential Containers** as a first-class capability. The original virtual nodes solved one problem — fast burst. VN2 makes virtual nodes a production-grade compute layer for AKS.
+If you've used the original AKS virtual nodes (the Virtual Kubelet–based experience), it's worth being explicit: **VN2 is not a rebrand.** It's a new implementation that integrates much more deeply with Kubernetes, lifts most of the prior limitations (init containers, persistent volume support, managed identity, richer networking, and more), and adds **Confidential Containers** as a first-class capability. The original virtual nodes solved one problem — fast burst. VN2 makes virtual nodes a production-grade compute layer for AKS.
 
 Two things VN2 brings to AKS that are worth getting excited about:
 
