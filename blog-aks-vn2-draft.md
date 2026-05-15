@@ -1,4 +1,4 @@
-# Introducing Virtual Nodes on Azure Container Instances (VN2) — A Powerful New Way to Run AKS
+# Virtual Nodes on Azure Container Instances (VN2) — A Powerful New Way to Run AKS
 
 *Effortless burst capacity, Confidential Containers, and a serverless compute layer for AKS — without leaving the Kubernetes you already know.*
 
