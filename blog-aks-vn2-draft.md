@@ -82,7 +82,7 @@ From the manifest's perspective, nothing changes. The pod lands on a virtual nod
 
 Full cluster setup, manifests, Helm install, and network design (Azure CNI + delegated ACI subnet) are in the companion repo:
 
-> **Demo repository:** *[GitHub link placeholder]*
+> **Demo repository:** *https://github.com/hailugebru/AKS-VN2/tree/main*
 
 ### A virtual node is a Kubernetes node
 
