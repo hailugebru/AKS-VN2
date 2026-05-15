@@ -23,7 +23,7 @@ The rest of this post walks through what VN2 is, what it unlocks, and what it lo
 
 ## What customers have been asking for
 
-The recurring conversations I have with enterprise customers about AKS keep landing on a few asks: stop guessing the VM SKU, skip the autoscaler wait, keep utilization high without manual tuning, run multi-tenant or sovereign workloads safely on a single cluster.
+The recurring conversations I have with enterprise customers about AKS keep landing on a few asks: which VM SKU to pick, keep utilization high without manual tuning, run multi-tenant or sovereign workloads safely on a single cluster.
 
 A lot of that nuance comes back to one thing: **a traditional node pool is tied to a specific VM SKU, region, and zone.** When demand spikes, or when Azure capacity in that exact SKU/region/zone is momentarily tight, that bond surfaces as familiar allocation errors (`SkuNotAvailable`, `AllocationFailed`, `ZonalAllocationFailed`, quota exceeded). The choice becomes overprovision and carry idle VMs, or stay lean and risk being unable to scale precisely when you need to. The [AKS Engineering Blog has a thorough walkthrough](https://blog.aks.azure.com/2025/12/06/node-auto-provisioning-capacity-management).
 
