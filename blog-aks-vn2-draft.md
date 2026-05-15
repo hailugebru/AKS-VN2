@@ -100,6 +100,9 @@ tolerations:
 
 `kubectl describe`, `kubectl logs`, and `kubectl exec` work as they would on any node — including a shell into a pod running inside an ACI micro-VM.
 
+<img width="960" height="322" alt="image" src="https://github.com/user-attachments/assets/3f5a6bf7-49d4-4850-927b-fc107f6c3c34" />
+
+
 > *[Screenshot 1: `kubectl get` / `kubectl logs` / `kubectl exec` against a VN2-hosted pod.]*
 
 Scaling stays trivial. `kubectl scale deployment demo-deployment --replicas=10` lands every replica on the same virtual node — no VMSS scale event, no provisioning latency, no climbing node-count chart. The same flow scales just as cleanly to hundreds.
