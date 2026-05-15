@@ -2,10 +2,6 @@
 
 *Effortless burst capacity, Confidential Containers, and a serverless compute layer for AKS — without leaving the Kubernetes you already know.*
 
-**Tags:** Azure Kubernetes Service, AKS, Azure Container Instances, ACI, Virtual Nodes, VN2, Confidential Containers, Serverless Kubernetes, Azure
-
-*Co-authored with Gurpreet Virdi and the AKS / ACI engineering team.*
-
 ---
 
 ## Meet VN2
@@ -154,21 +150,6 @@ Pair VN2 with traditional node pools, NAP, or Virtual Machine Node Pools for ste
 - Pick one bursty or multi-tenant workload from your portfolio and prototype it on VN2.
 
 **VN2 expands what AKS can run — more capacity, stronger isolation, per-second economics — without changing the Kubernetes operating model you already use.** Same `kubectl`, same manifests, same GitOps. New ceiling.
-
----
-
-## Resources
-
-| Resource | Link |
-|---|---|
-| Virtual Nodes on ACI — official docs | [learn.microsoft.com/azure/container-instances/container-instances-virtual-nodes](https://learn.microsoft.com/en-us/azure/container-instances/container-instances-virtual-nodes) |
-| AKS Virtual Nodes overview | [learn.microsoft.com/azure/aks/virtual-nodes](https://learn.microsoft.com/en-us/azure/aks/virtual-nodes) |
-| Confidential Containers on ACI | [learn.microsoft.com/azure/container-instances/container-instances-confidential-overview](https://learn.microsoft.com/en-us/azure/container-instances/container-instances-confidential-overview) |
-| Confidential Containers on AKS — forward direction | [learn.microsoft.com/azure/aks/confidential-containers-overview](https://learn.microsoft.com/en-us/azure/aks/confidential-containers-overview) |
-| AKS capacity management with NAP / VM Node Pools | [blog.aks.azure.com/2025/12/06/node-auto-provisioning-capacity-management](https://blog.aks.azure.com/2025/12/06/node-auto-provisioning-capacity-management) |
-| VN2 Helm chart | [microsoft.github.io/virtualnodesOnAzureContainerInstances](https://microsoft.github.io/virtualnodesOnAzureContainerInstances/) |
-| Demo repository (this post) | *[GitHub link placeholder]* |
-
 ---
 
 *Hailu Kassa is a Senior Cloud Solution Architect at Microsoft, focused on Azure Kubernetes Service and cloud-native architectures. Prior posts: [A Practical Guide to Autoscaling Web Applications with AKS, KEDA, and MSSQL](https://techcommunity.microsoft.com/t5/user/viewprofilepage/user-id/2436915) and [Autonomous AKS Incident Response with Azure SRE Agent](https://github.com/hailugebru/azure-sre-agents-aks).*
