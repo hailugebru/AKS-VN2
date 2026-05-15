@@ -136,11 +136,5 @@ Pair VN2 with traditional node pools, NAP, or Virtual Machine Node Pools for ste
 
 ---
 
-## Get started
-
-- Try VN2 in a non-production AKS cluster — the [deployment guide on Microsoft Learn](https://learn.microsoft.com/en-us/azure/container-instances/container-instances-virtual-nodes) is the starting point.
-- Stand up one confidential pod alongside a regular workload and verify the attestation report.
-- Pick one bursty or multi-tenant workload from your portfolio and prototype it on VN2.
-
 **VN2 expands what AKS can run — more capacity, stronger isolation, per-second economics — without changing the Kubernetes operating model you already use.** Same `kubectl`, same manifests, same GitOps. New ceiling.
 ---
