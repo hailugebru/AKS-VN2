@@ -132,15 +132,6 @@ The detail that makes this a genuinely new isolation primitive: **the policy is 
 
 ## Where VN2 fits
 
-| Scenario | Why VN2 |
-|---|---|
-| Bursty / event-driven workloads | Hundreds of pods in seconds, no autoscaler wait |
-| KEDA-scaled microservices | Burst capacity, billed per pod-second |
-| Batch jobs and CI agents | Spin up, run, tear down — pay only for what ran |
-| AI inference on untrusted code | Per-pod micro-VM isolation; confidential variant available |
-| Multi-tenant SaaS | Collapse N clusters into 1; hardware-rooted tenant isolation |
-| Sovereign and regulated workloads | Hardware-attested confidential containers alongside regular pods |
-
 Pair VN2 with traditional node pools, NAP, or Virtual Machine Node Pools for steady-state, DaemonSet, and persistent-volume workloads. **VN2 is additive, not a replacement.** For current capabilities, region availability, and known limitations, [Microsoft Learn is the source of truth](https://learn.microsoft.com/en-us/azure/aks/virtual-nodes).
 
 ---
