@@ -92,6 +92,8 @@ kubectl get nodes
 
 The virtual node shows up alongside your existing node pools, ready to schedule pods.
 
+<img width="485" height="77" alt="image" src="https://github.com/user-attachments/assets/a0c141f3-4b44-4f87-bdcb-56b51e52288d" />
+
 > *[Screenshot 5: `kubectl get nodes` showing the VN2 virtual node registered alongside the system node pool.]*
 
 ### A virtual node is a Kubernetes node
