@@ -80,6 +80,20 @@ Full cluster setup, manifests, Helm install, and network design (Azure CNI + del
 
 > **Demo repository:** [https://github.com/hailugebru/AKS-VN2/tree/main](https://github.com/hailugebru/AKS-VN2/tree/main)
 
+### Three commands to enable VN2
+
+Assuming the AKS cluster and delegated ACI subnet are already in place (the README covers both), the virtual node itself is deployed via a Helm chart from Microsoft's [VN2 repo](https://github.com/microsoft/virtualnodesOnAzureContainerInstances). Clone it, install the chart with whatever release name helps you track the deployment, and confirm the node is registered:
+
+```bash
+git clone https://github.com/microsoft/virtualnodesOnAzureContainerInstances.git
+helm install <yourReleaseName> ./virtualnodesOnAzureContainerInstances/Helm/virtualnode
+kubectl get nodes
+```
+
+The virtual node shows up alongside your existing node pools, ready to schedule pods.
+
+> *[Screenshot 5: `kubectl get nodes` showing the VN2 virtual node registered alongside the system node pool.]*
+
 ### A virtual node is a Kubernetes node
 
 You target it the same way you'd target any node:
