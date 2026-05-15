@@ -102,10 +102,10 @@ tolerations:
 
 <img width="960" height="322" alt="image" src="https://github.com/user-attachments/assets/3f5a6bf7-49d4-4850-927b-fc107f6c3c34" />
 
-
 > *[Screenshot 1: `kubectl get` / `kubectl logs` / `kubectl exec` against a VN2-hosted pod.]*
 
 Scaling stays trivial. `kubectl scale deployment demo-deployment --replicas=10` lands every replica on the same virtual node — no VMSS scale event, no provisioning latency, no climbing node-count chart. The same flow scales just as cleanly to hundreds.
+<img width="1402" height="490" alt="image" src="https://github.com/user-attachments/assets/f7842539-7736-4d4c-89d0-9b87bff6e014" />
 
 > *[Screenshot 2: `kubectl get pods -o wide` after scaling — every replica on the virtual node, no additional VMs.]*
 
@@ -121,6 +121,8 @@ az confcom acipolicygen --virtual-node-yaml ./hello-world-deployment.yaml
 ```
 
 The tool pulls each image, hashes its layers, builds the allow-list, and injects the annotation back into the manifest. `kubectl apply`, and you're done.
+<img width="1578" height="418" alt="image" src="https://github.com/user-attachments/assets/fe844450-6423-4ad3-baff-b0f4c7c13925" />
+
 
 > *[Screenshot 3: `az confcom acipolicygen` pulling and hashing images, emitting the base64 policy.]*
 
