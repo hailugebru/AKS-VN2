@@ -1,0 +1,55 @@
+#!/usr/bin/env pwsh
+
+# Azure subnet implementation for AKS + Virtual Nodes (ACI)
+# - default: 10.0.0.0/24 (reserved)
+# - aks:     10.1.0.0/16
+# - cg:      10.2.0.0/16 delegated to Microsoft.ContainerInstance/containerGroups
+
+$ResourceGroup = "rg-aks-vnet"
+$Location = "eastus2"
+$VnetName = "vnet-aks"
+$VnetAddressPrefix = "10.0.0.0/8"
+
+$DefaultSubnetName = "default"
+$DefaultSubnetPrefix = "10.0.0.0/24"
+
+$AksSubnetName = "aks"
+$AksSubnetPrefix = "10.1.0.0/16"
+
+$CgSubnetName = "cg"
+$CgSubnetPrefix = "10.2.0.0/16"
+$CgDelegation = "Microsoft.ContainerInstance/containerGroups"
+
+Write-Host "Creating resource group..."
+az group create --name $ResourceGroup --location $Location | Out-Null
+
+Write-Host "Creating VNet and default subnet..."
+az network vnet create `
+	--resource-group $ResourceGroup `
+	--name $VnetName `
+	--address-prefixes $VnetAddressPrefix `
+	--subnet-name $DefaultSubnetName `
+	--subnet-prefixes $DefaultSubnetPrefix | Out-Null
+
+Write-Host "Creating AKS subnet..."
+az network vnet subnet create `
+	--resource-group $ResourceGroup `
+	--vnet-name $VnetName `
+	--name $AksSubnetName `
+	--address-prefixes $AksSubnetPrefix | Out-Null
+
+Write-Host "Creating Container Group subnet with delegation..."
+az network vnet subnet create `
+	--resource-group $ResourceGroup `
+	--vnet-name $VnetName `
+	--name $CgSubnetName `
+	--address-prefixes $CgSubnetPrefix `
+	--delegations $CgDelegation | Out-Null
+
+Write-Host "\nSubnet summary:"
+az network vnet subnet list `
+	--resource-group $ResourceGroup `
+	--vnet-name $VnetName `
+	--query "[].{Name:name,IPv4:addressPrefix,DelegatedTo:delegations[0].serviceName}" `
+	--output table
+
