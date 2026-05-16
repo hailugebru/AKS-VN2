@@ -1,13 +1,14 @@
 # VN2 Step-by-Step Guide for This Workspace
 
-This guide creates the Azure network required for Virtual Nodes on Azure Container Instances (VN2), creates an AKS cluster that can use it, assigns the required managed identity permissions, installs the VN2 Helm chart from the upstream Microsoft repository, and validates pod scheduling. It also shows how to generate the confidential container policy annotation for VN2 workloads.
+This guide documents the exact workflow used in this workspace to create the Azure network required for Virtual Nodes on Azure Container Instances (VN2), create an AKS cluster that can use it, assign the required managed identity permissions, install the VN2 Helm chart from the upstream Microsoft repository, and validate pod scheduling.
+
+This is not a hypothetical setup. The AKS cluster was created, VN2 was installed successfully, and the demo workload shown in this repo and companion blog was scheduled onto the VN2 node. The screenshots in the blog post come from that working environment.
 
 This guide is intentionally aligned to the following source material:
 
 - Microsoft upstream VN2 repository: `microsoft/virtualnodesOnAzureContainerInstances`
 - Upstream install section: `#installing-the-virtual-node-application-via-helm`
 - Upstream pod customization guidance: `Docs/PodCustomizations.md#confidential-containers`
-- Microsoft TechCommunity migration article for next-generation virtual nodes on ACI
 
 This README is written for this workspace and its file layout. It does **not** claim to be the only supported deployment pattern. For current feature support, region availability, and limitations, Microsoft documentation remains the source of truth.
 
@@ -34,6 +35,20 @@ cd .\AKS-VN2
 - `azure_cli.cli`: creates the resource group, VNet, `default` subnet, `aks` subnet, and delegated `cg` subnet.
 - `hello-world-pod.yaml`: sample pod that targets VN2.
 - `..\virtualnodesOnAzureContainerInstances\Helm\virtualnode`: local Helm chart path from the upstream Microsoft repo.
+
+## Validated outcome in this workspace
+
+The steps in this README were used to stand up a working VN2 demo environment for this repository.
+
+That validated environment included:
+
+- an AKS cluster using Azure CNI,
+- a delegated `cg` subnet for VN2-backed ACI container groups,
+- a successful VN2 Helm install,
+- a `Ready` VN2 node visible in `kubectl get nodes`,
+- and a demo pod scheduled onto that VN2 node.
+
+The exact commands in any Azure deployment can still be affected by subscription policy, quota, region support, and timing of RBAC propagation, but the overall flow in this README was exercised successfully.
 
 ## Source-aligned notes before you start
 
@@ -182,7 +197,7 @@ This is the step most likely to break the deployment if skipped or scoped incorr
 
 The upstream VN2 documentation requires the AKS managed identity used by VN2 to have permission to manage the ACI-backed resources in the AKS-managed resource group. If the VNet is outside that managed resource group, network permissions are also required for the VNet side.
 
-This guide uses the cluster kubelet identity as exposed by `identityProfile.kubeletidentity`, and scopes the network permission to the delegated VN2 subnet.
+This guide uses the cluster kubelet identity as exposed by `identityProfile.kubeletidentity`, and scopes the network permission to the delegated VN2 subnet. That scope worked in the validated demo environment for this repo.
 
 ```powershell
 $NodeResourceGroup = az aks show `
@@ -303,7 +318,7 @@ kubectl get pod demo-pod -o wide
 kubectl logs demo-pod
 ```
 
-The pod should land on the VN2 node, not on a regular AKS VM node.
+In the validated demo environment for this repo, the pod landed on the VN2 node rather than on a regular AKS VM node.
 
 ## Step 10: Required scheduling settings for your own workloads
 
@@ -348,7 +363,7 @@ Important notes:
 
 ## Optional: Private ACR image pull with Managed Identity
 
-The migration guidance calls out support for image pulling through Private Link and Managed Identity. The upstream VN2 chart supports this through `acrTrustedAccess` values.
+The upstream VN2 chart supports private ACR image pulling through `acrTrustedAccess` values.
 
 If you are using a private ACR with Trusted Access enabled:
 
