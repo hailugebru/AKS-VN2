@@ -1,27 +1,48 @@
 # VN2 Step-by-Step Guide for This Workspace
 
-This guide creates the Azure network required for Virtual Nodes on Azure Container Instances (VN2), creates an AKS cluster that can use it, assigns the required managed identity permissions, installs the VN2 Helm chart, and validates pod scheduling.
+This guide creates the Azure network required for Virtual Nodes on Azure Container Instances (VN2), creates an AKS cluster that can use it, assigns the required managed identity permissions, installs the VN2 Helm chart from the upstream Microsoft repository, and validates pod scheduling. It also shows how to generate the confidential container policy annotation for VN2 workloads.
 
-It is based on:
+This guide is intentionally aligned to the following source material:
 
-- The local PowerShell script in `azure_cli.cli`
-- The upstream repo: `virtualnodesOnAzureContainerInstances`
-- The Microsoft migration article for VN2, especially the managed identity and RBAC steps
+- Microsoft upstream VN2 repository: `microsoft/virtualnodesOnAzureContainerInstances`
+- Upstream install section: `#installing-the-virtual-node-application-via-helm`
+- Upstream pod customization guidance: `Docs/PodCustomizations.md#confidential-containers`
+- Microsoft TechCommunity migration article for next-generation virtual nodes on ACI
+
+This README is written for this workspace and its file layout. It does **not** claim to be the only supported deployment pattern. For current feature support, region availability, and limitations, Microsoft documentation remains the source of truth.
 
 ## What this guide assumes
 
 - You are running PowerShell on Windows.
 - Azure CLI, Helm, Git, and kubectl are already installed.
 - You have permission to create resource groups, VNets, AKS clusters, and role assignments.
-- The local workspace contains both folders:
+- You are using AKS with **Azure CNI** networking.
+- The local workspace contains both folders side by side:
   - `AKS-VN2`
   - `virtualnodesOnAzureContainerInstances`
+
+If you do not already have the upstream VN2 repo locally, clone it first:
+
+```powershell
+cd ..
+git clone https://github.com/microsoft/virtualnodesOnAzureContainerInstances.git
+cd .\AKS-VN2
+```
 
 ## Files used by this guide
 
 - `azure_cli.cli`: creates the resource group, VNet, `default` subnet, `aks` subnet, and delegated `cg` subnet.
 - `hello-world-pod.yaml`: sample pod that targets VN2.
-- `..\virtualnodesOnAzureContainerInstances\Helm\virtualnode`: local Helm chart path.
+- `..\virtualnodesOnAzureContainerInstances\Helm\virtualnode`: local Helm chart path from the upstream Microsoft repo.
+
+## Source-aligned notes before you start
+
+- VN2 requires **Azure CNI**.
+- The delegated subnet for VN2-backed ACI container groups must be delegated to `Microsoft.ContainerInstance/containerGroups`.
+- The subnet name `cg` is used by the upstream chart defaults. If you change it, you may also need to adjust Helm values.
+- The upstream VN2 repo recommends AKS worker nodes with at least **4 vCPU and 16 GiB RAM** so the VN2 infrastructure pods have enough capacity.
+- Kubernetes version support changes over time. Do **not** assume the example version below is available in every region; verify with `az aks get-versions` before cluster creation.
+- Confidential containers for VN2 are region-dependent. Validate support in your chosen region before relying on that path.
 
 ## Step 1: Sign in and set variables
 
@@ -37,7 +58,7 @@ $VnetName = "vnet-aks"
 $AksSubnetName = "aks"
 $CgSubnetName = "cg"
 $AksClusterName = "aks-vn2-demo"
-$KubernetesVersion = "1.33.6"
+$KubernetesVersion = "<supported-1.33.x-version-in-your-region>"
 $NodeVmSize = "Standard_D4s_v5"
 $NodeCount = 2
 $SystemNodeOsDiskSize = 128
@@ -49,7 +70,7 @@ az provider register --namespace Microsoft.ContainerInstance
 
 Notes:
 
-- The `cg` subnet name matters. It matches the default Helm chart behavior from the upstream VN2 repo.
+- The `cg` subnet name matters because it matches the upstream chart default behavior.
 - The `cg` subnet must be delegated to `Microsoft.ContainerInstance/containerGroups`.
 - The `default` subnet is reserved as `10.0.0.0/24` in the upstream guidance.
 
@@ -126,7 +147,15 @@ if (-not $CgSubnetId) {
 }
 ```
 
-## Step 4: Create the AKS cluster
+## Step 4: Verify supported AKS versions and create the cluster
+
+List supported versions first:
+
+```powershell
+az aks get-versions --location $Location --output table
+```
+
+Then create the cluster.
 
 VN2 requires AKS with Azure CNI networking and enough node capacity to host the VN2 infrastructure pods. The upstream repo recommends at least 4 vCPU and 16 GiB worker nodes.
 
@@ -147,22 +176,13 @@ az aks create `
   --generate-ssh-keys
 ```
 
-If your chosen Kubernetes version is not available in the region, list supported versions first:
+## Step 5: Grant the required Azure permissions
 
-```powershell
-az aks get-versions --location $Location --output table
-```
+This is the step most likely to break the deployment if skipped or scoped incorrectly.
 
-## Step 5: Grant the AKS managed identity the required permissions
+The upstream VN2 documentation requires the AKS managed identity used by VN2 to have permission to manage the ACI-backed resources in the AKS-managed resource group. If the VNet is outside that managed resource group, network permissions are also required for the VNet side.
 
-This is the part that usually breaks first if it is skipped.
-
-The VN2 migration article calls out two permissions for the cluster's kubelet identity:
-
-- `Contributor` on the AKS node resource group
-- `Network Contributor` on the delegated VN2 subnet
-
-Run the following exactly after AKS creation:
+This guide uses the cluster kubelet identity as exposed by `identityProfile.kubeletidentity`, and scopes the network permission to the delegated VN2 subnet.
 
 ```powershell
 $NodeResourceGroup = az aks show `
@@ -196,16 +216,16 @@ az role assignment create `
   --scope $CgSubnetId
 ```
 
-Why both roles matter:
+Why these permissions are needed in this guide:
 
-- `Contributor` on the node resource group lets VN2 manage the ACI-backed container group infrastructure.
-- `Network Contributor` on the delegated `cg` subnet lets VN2 attach ACI container groups to the subnet.
+- `Contributor` on the AKS-managed resource group allows VN2 to create and manage the ACI-backed container group resources it needs.
+- `Network Contributor` on the delegated `cg` subnet allows VN2-backed ACI container groups to join that subnet.
 
 If role assignment propagation is slow, wait a minute or two and retry the Helm install.
 
-## Step 6: Optional least-privilege alternative to Contributor
+## Step 6: Optional least-privilege alternative to broad Contributor
 
-If you do not want to grant broad `Contributor` access, the upstream security guide provides a smaller custom role with the minimum core permissions for VN2.
+If you do not want to grant broad `Contributor` access, the upstream security guidance describes a smaller custom role for the core VN2 operations.
 
 Create `role.json`:
 
@@ -258,7 +278,7 @@ kubectl get nodes
 
 At this point you should only see the regular AKS VM-backed nodes.
 
-## Step 8: Install the VN2 Helm chart from the local repo
+## Step 8: Install the VN2 Helm chart from the upstream repo
 
 ```powershell
 helm install $ReleaseName ..\virtualnodesOnAzureContainerInstances\Helm\virtualnode
@@ -271,11 +291,11 @@ kubectl get pods -n vn2
 kubectl get nodes
 ```
 
-Expected result: a new node named similar to `virtualnode-0` shows as `Ready`.
+Expected result: a new node with a name similar to `virtualnode-0` shows as `Ready`.
 
 ## Step 9: Deploy a test pod to VN2
 
-This workspace already contains a working sample pod manifest with the correct selector and toleration.
+This workspace already contains a sample pod manifest with the VN2 selector and toleration.
 
 ```powershell
 kubectl apply -f .\hello-world-pod.yaml
@@ -292,17 +312,43 @@ For workloads that must run on VN2, use:
 ```yaml
 nodeSelector:
   virtualization: virtualnode2
+  kubernetes.io/os: linux
 tolerations:
 - effect: NoSchedule
   key: virtual-kubelet.io/provider
   operator: Exists
 ```
 
-That is the updated VN2 selector model from the migration article. It is different from the legacy AKS virtual-node add-on.
+This is the updated VN2 scheduling model. It is different from the legacy AKS virtual-node add-on.
+
+## Step 11: Optional confidential containers on VN2
+
+A VN2 pod becomes confidential when you add the `microsoft.containerinstance.virtualnode.ccepolicy` annotation containing the generated CCE policy.
+
+Do not hand-author that policy. Generate it with `confcom`.
+
+```powershell
+az extension add -n confcom
+az confcom acipolicygen --virtual-node-yaml .\hello-world-pod.yaml
+```
+
+That command pulls the referenced images, hashes their layers, generates the CCE policy, and injects the annotation into the YAML.
+
+Then apply the updated manifest:
+
+```powershell
+kubectl apply -f .\hello-world-pod.yaml
+```
+
+Important notes:
+
+- Confidential VN2 support is region-dependent.
+- The annotation value is generated policy, not a manual toggle string.
+- The upstream pod customization document is the source of truth for supported confidential-container settings and other VN2 pod customizations.
 
 ## Optional: Private ACR image pull with Managed Identity
 
-The migration article calls out support for image pulling through Private Link and Managed Identity. The upstream VN2 chart supports this through `acrTrustedAccess` values.
+The migration guidance calls out support for image pulling through Private Link and Managed Identity. The upstream VN2 chart supports this through `acrTrustedAccess` values.
 
 If you are using a private ACR with Trusted Access enabled:
 
@@ -340,9 +386,10 @@ az network vnet subnet show --resource-group $ResourceGroup --vnet-name $VnetNam
 Common causes:
 
 - The `cg` subnet was not delegated.
-- The kubelet identity does not yet have the required role assignments.
+- The required role assignments have not propagated yet.
 - The AKS nodes are too small to host the VN2 infrastructure pods.
 - The cluster was created with a networking mode other than Azure CNI.
+- The Kubernetes version selected is not actually supported in the chosen region.
 
 ## Cleanup
 
@@ -363,8 +410,9 @@ az group delete --name $ResourceGroup --yes --no-wait
 If you follow the steps above in order, you will end with:
 
 - A VNet created by `azure_cli.cli`
-- An AKS cluster attached to the `aks` subnet
+- An AKS cluster attached to the `aks` subnet using Azure CNI
 - A delegated `cg` subnet for VN2-backed ACI pods
-- The required managed identity permissions for VN2
+- The Azure permissions required for VN2 in this workspace pattern
 - A Helm-installed VN2 node in `Ready` state
 - A sample pod running on VN2
+- An optional path to generate and apply a confidential-container policy for VN2 workloads
