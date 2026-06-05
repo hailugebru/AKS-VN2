@@ -6,32 +6,24 @@
 
 ## Meet virtual nodes on ACI
 
-Kubernetes has become the default way to run containers at scale, and Azure Kubernetes Service (AKS) makes it a managed service: you get the full Kubernetes API without operating the control plane yourself. **Virtual nodes on Azure Container Instances** take that idea a step further. They let your Kubernetes workloads run directly on Azure's serverless container platform, so you get the Kubernetes you already know with the elasticity and per-second economics of ACI underneath, and without sizing or managing VM node pools for that capacity.
+Azure Kubernetes Service (AKS) gives you managed Kubernetes: the full Kubernetes API without operating the control plane yourself. **Virtual nodes on Azure Container Instances** go a step further, letting your pods run directly on Azure's serverless container platform, with the elasticity and per-second economics of ACI and no VM node pools to size or manage. Whether you already run AKS or want a managed Kubernetes that bursts without node management, this is for you.
 
-Whether you already run AKS or you are looking for a managed Kubernetes that can burst without node management, this is for you.
+In short: **virtual nodes on ACI attach Azure's serverless container platform to your cluster as Kubernetes nodes.** Pods run as Hyper-V isolated containers with effectively unlimited cores and memory, up to 200 pods per node today (`--max-pods`, being raised); run multiple virtual nodes, scaled as replicas, for more. They behave like any other pod: same `kubectl`, Helm, and GitOps.
 
-In one sentence: **virtual nodes on ACI attach Azure's serverless container platform to your AKS cluster as Kubernetes nodes.** Pods scheduled to them run as Hyper-V isolated containers on Azure Container Instances, with effectively unlimited cores and memory but a finite pod count per node, currently up to 200 pods (`--max-pods`, a limit actively being raised). For more capacity you run multiple virtual nodes, scaled as replicas today, with a dedicated cluster autoscaler on the way. From the manifest's perspective they appear and behave exactly like any other Kubernetes pod: same `kubectl`, same Helm charts, same Argo CD or Flux pipelines.
+If you've used the original AKS virtual nodes add-on (Virtual Kubelet based), this is **not a rebrand.** It is a new implementation that integrates far more deeply with Kubernetes, lifts most prior limitations (init containers, persistent volumes, managed identity, richer networking), and adds confidential containers as a first-class capability. The [migration guide on the Apps on Azure blog](https://techcommunity.microsoft.com/blog/appsonazureblog/migrating-to-the-next-generation-of-virtual-nodes-on-azure-container-instances-a/4496565) has the details.
 
-If you've used the original AKS virtual nodes add-on (the Virtual Kubelet based experience), it's worth being explicit: **this is not a rebrand.** Virtual nodes on ACI are a new implementation that integrates much more deeply with Kubernetes, lift most of the prior limitations (init containers, persistent volume support, managed identity, richer networking, and more), and add confidential containers as a first-class capability. The original add-on solved one problem: fast burst. Virtual nodes on ACI make them a production-grade compute layer for AKS. The [migration guide on the Apps on Azure blog](https://techcommunity.microsoft.com/blog/appsonazureblog/migrating-to-the-next-generation-of-virtual-nodes-on-azure-container-instances-a/4496565) covers the high-level differences, documentation, and Helm details.
-
-Two things they bring to AKS that are worth getting excited about:
+Two things stand out:
 
 1. **Effortless burst capacity.** Schedule up to 200 pods per virtual node in seconds (limit being raised), and run multiple virtual nodes for more, with no node pool sizing, no autoscaler wait, and no idle-VM cost.
 2. **Confidential containers.** Hardware-attested, per-container isolation inside a Trusted Execution Environment (TEE) that opens up regulated, sovereign, and AI-on-untrusted-code workloads on AKS.
-
-The rest of this post walks through what virtual nodes on ACI are, what they unlock, and what they look like running.
 
 ---
 
 ## What customers have been asking for
 
-The recurring conversations I have with enterprise customers about AKS keep landing on a few asks: which VM SKU to pick, keep utilization high without manual tuning, run multi-tenant or sovereign workloads safely on a single cluster.
+Most AKS capacity conversations come back to one thing: **a node pool is tied to a specific VM SKU, region, and zone.** When demand spikes, or capacity in that exact SKU/region/zone is momentarily tight, you hit familiar allocation errors (`SkuNotAvailable`, `AllocationFailed`, `ZonalAllocationFailed`, quota exceeded). The choice becomes overprovision and carry idle VMs, or stay lean and risk not scaling when you need to.
 
-A lot of that nuance comes back to one thing: **a traditional node pool is tied to a specific VM SKU, region, and zone.** When demand spikes, or when Azure capacity in that exact SKU/region/zone is momentarily tight, that bond surfaces as familiar allocation errors (`SkuNotAvailable`, `AllocationFailed`, `ZonalAllocationFailed`, quota exceeded). The choice becomes overprovision and carry idle VMs, or stay lean and risk being unable to scale precisely when you need to. The [AKS Engineering Blog has a thorough walkthrough](https://blog.aks.azure.com/2025/12/06/node-auto-provisioning-capacity-management).
-
-AKS already has strong answers here. **Node Auto Provisioning (NAP)**, built on Karpenter, picks the right VM SKU dynamically. **Virtual Machine Node Pools** let a single pool span multiple SKUs. Both meaningfully widen the allocation surface for steady-state workloads, and both remain the right starting point.
-
-**Virtual nodes on ACI are complementary.** For bursty, event-driven, short-lived, or confidential workloads, they sidestep the VM allocation question entirely. The pod lands on Azure's serverless ACI platform directly. NAP and VM Node Pools handle the baseline; virtual nodes on ACI absorb the spikes and the specialized isolation work on top.
+AKS already widens that surface for steady-state workloads: **Node Auto Provisioning** picks the right SKU dynamically, and **Virtual Machine Node Pools** span multiple SKUs ([details on the AKS Engineering Blog](https://blog.aks.azure.com/2025/12/06/node-auto-provisioning-capacity-management)). **Virtual nodes on ACI are complementary.** For bursty, event-driven, short-lived, or confidential workloads, the pod lands on Azure's serverless platform directly, sidestepping VM allocation entirely. NAP and VM Node Pools handle the baseline; virtual nodes absorb the spikes and the specialized isolation work on top.
 
 ---
 
