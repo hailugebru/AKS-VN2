@@ -14,8 +14,8 @@ If you've used the original AKS virtual nodes add-on (Virtual Kubelet based), th
 
 Two things stand out:
 
-1. **Effortless burst capacity.** Schedule up to 200 pods per virtual node in seconds (limit being raised), and run multiple virtual nodes for more, with no node pool sizing, no autoscaler wait, and no idle-VM cost.
-2. **Confidential containers.** Hardware-attested, per-container isolation inside a Trusted Execution Environment (TEE) that opens up regulated, sovereign, and AI-on-untrusted-code workloads on AKS.
+1. **Effortless burst capacity.** Schedule up to 200 pods per virtual node in seconds (limit being raised), and run multiple virtual nodes for more, with no node pool sizing and no autoscaler wait. You pay per second for the cores and memory used, with no idle-VM cost.
+2. **Confidential containers.** Hardware-attested, per-container isolation inside a Trusted Execution Environment (TEE) that opens up regulated, sovereign, and AI-on-untrusted-code workloads on AKS. The same per-pod isolation also makes multi-tenancy possible on a single cluster, though safe multi-tenancy still needs additional network boundaries, which Microsoft is documenting.
 
 ---
 
@@ -54,17 +54,6 @@ ACI runs every container as a Hyper-V isolated container on a massive shared pla
 ```
 
 From the manifest's perspective, nothing changes. The pod lands on a virtual node; the virtual node hands it off to ACI. See [Microsoft Learn: virtual nodes on ACI](https://learn.microsoft.com/en-us/azure/container-instances/container-instances-virtual-nodes) for the official capability and current limits.
-
----
-
-## What virtual nodes on ACI unlock
-
-| | |
-|---|---|
-| **Effortless burst capacity** | Up to 200 pods per virtual node in seconds (`--max-pods`, being raised), and multiple virtual nodes for more. No VMSS cold-start tax, no node pool sizing exercise. |
-| **Per-second billing for cores and memory** | Batch jobs, CI agents, KEDA-scaled handlers, and AI inference pay only for the vCPU and memory they consume, by the second. |
-| **Confidential containers** | Each pod runs inside a hardware-based, attested Trusted Execution Environment (TEE) that protects data in use and encrypts memory, with verifiable execution policies and a hardware root of trust through guest attestation. Confidential containers on AKS sunset in March 2026; virtual nodes on ACI are the forward path. |
-| **Multi-tenant isolation** | Per-pod hardware isolation makes multi-tenancy possible on a single AKS cluster, which standard AKS nodes cannot offer. Safe multi-tenancy and hostile-workload isolation still require additional boundaries, network protections in particular; Microsoft is publishing holistic guidance for configuring them. |
 
 ---
 
