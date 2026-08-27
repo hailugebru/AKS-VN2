@@ -60,7 +60,7 @@ The virtual node appears alongside any existing capacity, ready to accept work.
 
 ### A virtual node is a Kubernetes node
 
-You target it the same way you'd target any node:
+You target it the same way you would target any node. These few lines in a manifest say "run this on the virtual node":
 
 ```yaml
 nodeSelector:
@@ -72,24 +72,23 @@ tolerations:
   effect: NoSchedule
 ```
 
-`kubectl describe`, `kubectl logs`, and `kubectl exec` work as they would on any node, including a shell into a pod running as a Hyper-V isolated container.
+That is the entire integration surface. No new API to learn, no separate deployment pipeline, no application changes. `kubectl describe`, `kubectl logs`, and `kubectl exec`, the standard commands for inspecting and troubleshooting, all work as they would anywhere else, including opening a shell inside a container running in a Hyper-V isolated boundary.
 
 <img width="960" height="322" alt="image" src="https://github.com/user-attachments/assets/3f5a6bf7-49d4-4850-927b-fc107f6c3c34" />
 
-> *[Screenshot 1: `kubectl get` / `kubectl logs` / `kubectl exec` against a virtual-node-hosted pod.]*
+> *Image 2: `kubectl get` / `kubectl logs` / `kubectl exec` against a virtual-node-hosted pod.*
 
 Scaling stays trivial. `kubectl scale deployment demo-deployment --replicas=10` lands every replica on the same virtual node, with no VMSS scale event, no provisioning latency, no climbing node-count chart. The same flow scales just as cleanly to hundreds.
 
 <img width="1402" height="490" alt="image" src="https://github.com/user-attachments/assets/f7842539-7736-4d4c-89d0-9b87bff6e014" />
 
-> *[Screenshot 2: `kubectl get pods -o wide` after scaling, every replica on the virtual node, no additional VMs.]*
+> *Image 3: `kubectl get pods -o wide` after scaling, every replica on the virtual node, no additional VMs.*
 
 ### One annotation makes a pod confidential
 
-The single switch that turns a regular virtual-node pod into a confidential one is a pod annotation holding the CCE (Container Confidential Enforcement) policy, a base64 Rego document that pins exactly which images, commands, environment variables, mounts, and capabilities are permitted inside the TEE.
+Turning a regular container into a confidential one takes a single addition to its manifest: a policy that pins exactly which images, commands, environment variables, mounts, and capabilities are permitted inside the Trusted Execution Environment. The format is a base64 encoded Rego document, called a CCE (Container Confidential Enforcement) policy.
 
-You don't write that policy by hand:
-
+You do not write that policy by hand. A tool generates it from the manifest you already have:
 ```bash
 az extension add -n confcom
 az confcom acipolicygen --virtual-node-yaml ./hello-world-deployment.yaml
@@ -99,20 +98,28 @@ The tool pulls each image, hashes its layers, builds the allow-list, and injects
 
 <img width="1578" height="418" alt="image" src="https://github.com/user-attachments/assets/fe844450-6423-4ad3-baff-b0f4c7c13925" />
 
-> *[Screenshot 3: `az confcom acipolicygen` pulling and hashing images, emitting the base64 policy.]*
+> *Image 4: `az confcom acipolicygen` pulling and hashing images, emitting the base64 policy.*
 
-The detail that makes this a genuinely new isolation primitive: **the policy is enforced by the guest OS inside the TEE**, not by a control-plane admission webhook that an attacker on the host could bypass. The attestation report is retrievable from inside the pod, giving you a cryptographic *"prove to me you did not tamper with my workload"* guarantee that regulated industries, and increasingly AI workloads running untrusted code, have been asking for. Background: [Microsoft Learn: confidential containers on ACI](https://learn.microsoft.com/en-us/azure/container-instances/container-instances-confidential-overview).
+Here is why this is a genuinely new isolation primitive rather than a stronger version of an existing one. Most container security policy is enforced by software in the cluster, which means an attacker who compromises the host can potentially bypass it. This policy is enforced by the guest operating system inside the TEE instead. The hardware also produces an attestation report, retrievable from inside the container, which is a cryptographic proof that the workload running is the workload you specified and nothing tampered with it. That is the guarantee regulated industries have been asking for, and increasingly the one AI workloads running untrusted code need too. 
+
+Background: [Microsoft Learn: confidential containers on ACI](https://learn.microsoft.com/en-us/azure/container-instances/container-instances-confidential-overview).
 
 ---
 
 ## Wrapping up
 
-Virtual nodes on ACI give AKS two things that were previously hard to deliver cleanly on Kubernetes:
+Virtual nodes on ACI give containers on Azure two things that were previously hard to deliver cleanly on Kubernetes:
 
-- **Effortless burst capacity** on Azure's serverless container platform, billed per second for the cores and memory used, with no node pool sizing and no autoscaler wait.
-- **Confidential containers** with hardware-attested, per-container isolation inside a Trusted Execution Environment (TEE).
+* **Effortless burst capacity** on Azure's serverless container platform, billed per second for the cores and memory used, with no capacity planning and no waiting for machines.
+* **Confidential containers** with hardware attested, per container isolation inside a Trusted Execution Environment.
 
-It's additive, not a replacement. Traditional node pools, NAP, and Virtual Machine Node Pools remain the right home for steady-state, DaemonSet, and persistent-volume workloads. Virtual nodes on ACI absorb the spikes, the short-lived jobs, and the specialized isolation work on top.
+Virtual nodes are additive, not a replacement. Traditional node pools, NAP, and Virtual Machine Node Pools remain the right home for steady-state, DaemonSet, and persistent-volume workloads. Virtual nodes on ACI absorb the spikes, the short-lived jobs, and the specialized isolation work on top.
+
+### Where to start
+
+* **New to containers on Azure?** Start with a small AKS cluster and add a virtual node from day one. You get a managed Kubernetes environment without having to guess your peak capacity in advance, and the elastic layer is there the first time you need it.
+* **Already running AKS?** Add a virtual node to an existing cluster and move one bursty or short lived workload to it. Nothing else changes, and the comparison is immediate.
+* **Evaluating platforms?** The capability that is hard to find elsewhere is the confidential containers path: hardware attested isolation per container, reachable through a standard Kubernetes manifest.
 
 The result: **virtual nodes on ACI expand what AKS can run, with more capacity, stronger isolation, and per-second economics, without changing the Kubernetes operating model you already use.** Same `kubectl`, same manifests, same GitOps. New ceiling.
 
