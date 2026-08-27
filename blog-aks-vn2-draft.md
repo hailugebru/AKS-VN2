@@ -34,13 +34,17 @@ From the application manifest's perspective, nothing changes. The pod lands on a
 
 ## Virtual nodes on ACI in practice
 
-The exact manifests behind the screenshots below live in a companion demo repo. Setup itself is documented officially: you can reproduce this end to end from the [ACI virtual nodes documentation](https://learn.microsoft.com/en-us/azure/container-instances/container-instances-virtual-nodes) and the [microsoft/virtualnodesOnAzureContainerInstances Helm repo](https://github.com/microsoft/virtualnodesOnAzureContainerInstances). Two requirements worth calling out before you start: deploy into a delegated ACI subnet, and keep AKS auto-upgrades to patch-only within a minor version, since minor-version jumps can ship breaking changes that regress the virtual nodes until the chart is realigned.
+The rest of this post is hands on. If you have never used Kubernetes, you can still follow it. `kubectl` is the command line tool for talking to a cluster, Helm installs packaged software into one, and a manifest is a text file describing what you want to run. If you have a cluster, everything below runs against it as written.
 
-> **Demo manifests:** [https://github.com/hailugebru/AKS-VN2/tree/main](https://github.com/hailugebru/AKS-VN2/tree/main)
+The manifests behind the examples live in a companion demo repo. Setup is documented officially, and you can reproduce this end to end from the ACI virtual nodes documentation and the `microsoft/virtualnodesOnAzureContainerInstances` Helm repo.
+
+One requirement before you start: deploy into a delegated ACI subnet, meaning a subnet in your virtual network set aside for the ACI platform to place containers in.
+
+Demo manifests: https://github.com/hailugebru/AKS-VN2/tree/main
 
 ### Enable virtual nodes on ACI
 
-The virtual node is deployed via Helm. The Microsoft GitHub repo is itself a Helm repository, so a single `helm install` is all you strictly need; cloning first (shown here) just makes it easier to customize values. `kubectl get nodes` afterward is an optional check that the node registered:
+The virtual node is deployed via Helm. The Microsoft GitHub repo is itself a Helm repository, so a single `helm install` is all you strictly need. Cloning first, shown here, just makes it easier to customize values. Running `kubectl get nodes` afterward confirms the node registered.
 
 ```bash
 git clone https://github.com/microsoft/virtualnodesOnAzureContainerInstances.git
@@ -48,7 +52,7 @@ helm install <yourReleaseName> ./virtualnodesOnAzureContainerInstances/Helm/virt
 kubectl get nodes
 ```
 
-The virtual node shows up alongside your existing node pools, ready to schedule pods.
+The virtual node appears alongside any existing capacity, ready to accept work.
 
 <img width="485" height="77" alt="image" src="https://github.com/user-attachments/assets/a0c141f3-4b44-4f87-bdcb-56b51e52288d" />
 
