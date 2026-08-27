@@ -19,14 +19,6 @@ Two things stand out:
 
 ---
 
-## What customers have been asking for
-
-Most AKS capacity conversations come back to one thing: **a node pool is tied to a specific VM SKU, region, and zone.** When demand spikes, or capacity in that exact SKU/region/zone is momentarily tight, you hit familiar allocation errors (`SkuNotAvailable`, `AllocationFailed`, `ZonalAllocationFailed`, quota exceeded). The choice becomes overprovision and carry idle VMs, or stay lean and risk not scaling when you need to.
-
-AKS already widens that surface for steady-state workloads: **Node Auto Provisioning** picks the right SKU dynamically, and **Virtual Machine Node Pools** span multiple SKUs ([details on the AKS Engineering Blog](https://blog.aks.azure.com/2025/12/06/node-auto-provisioning-capacity-management)). **Virtual nodes on ACI are complementary.** For bursty, event-driven, short-lived, or confidential workloads, the pod lands on Azure's serverless platform directly, sidestepping VM allocation entirely. NAP and VM Node Pools handle the baseline; virtual nodes absorb the spikes and the specialized isolation work on top.
-
----
-
 ## How virtual nodes on ACI work
 
 ACI runs every container as a Hyper-V isolated container on a massive shared platform that Azure operates. Plug that into AKS through a virtual node and the picture looks like this:
