@@ -21,31 +21,16 @@ Two things stand out:
 
 ## How virtual nodes on ACI work
 
-ACI runs every container as a Hyper-V isolated container on a massive shared platform that Azure operates. Plug that into AKS through a virtual node and the picture looks like this:
+ACI runs every container as a Hyper-V isolated container, which means each one gets its own lightweight virtual machine boundary rather than sharing a kernel with its neighbors. Azure operates that platform. A virtual node connects it to your cluster.
+
+The cluster's control plane, the component that decides where each container runs, sees two kinds of destination: a small pool of virtual machines carrying cluster services, and one or more virtual nodes. 
 
 ```
-                ┌──────────────────────────────────────────┐
-                │           AKS Control Plane              │
-                │  (kubectl, Helm, Argo CD, Flux, KEDA…)   │
-                └──────────────────────────────────────────┘
-                                  │
-              ┌───────────────────┴───────────────────┐
-              ▼                                       ▼
-   ┌─────────────────────┐               ┌────────────────────────┐
-   │ System node pool    │               │  Virtual node on ACI   │
-   │ (small VM, control  │               │  (one or more,         │
-   │  plane add-ons)     │               │   scaled as replicas)  │
-   └─────────────────────┘               └─────────┬──────────────┘
-                                                   │
-                                                   ▼
-                                   ┌──────────────────────────────┐
-                                   │   ACI serverless platform    │
-                                   │   (Hyper-V isolated          │
-                                   │    container per pod)        │
-                                   └──────────────────────────────┘
+   <img width="1700" height="800" alt="aks_virtual_nodes_diagram_compact" src="https://github.com/user-attachments/assets/c4042d4d-63aa-4ca3-bef5-46853c4c79ae" />
+             
 ```
 
-From the manifest's perspective, nothing changes. The pod lands on a virtual node; the virtual node hands it off to ACI. See [Microsoft Learn: virtual nodes on ACI](https://learn.microsoft.com/en-us/azure/container-instances/container-instances-virtual-nodes) for the official capability and current limits.
+From the application manifest's perspective, nothing changes. The pod lands on a virtual node; the virtual node hands it off to ACI. See [Microsoft Learn: virtual nodes on ACI](https://learn.microsoft.com/en-us/azure/container-instances/container-instances-virtual-nodes) for the official capability and current limits.
 
 ---
 
