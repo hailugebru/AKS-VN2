@@ -1,4 +1,4 @@
-# Virtual nodes on Azure Container Instances: A Powerful New Way to Run AKS
+# Virtual nodes on Azure Container Instances: a new compute layer for AKS
 
 *Effortless burst capacity, confidential containers, and a serverless compute layer for AKS, without leaving the Kubernetes you already know.*
 
@@ -6,16 +6,15 @@
 
 ## Meet virtual nodes on ACI
 
-Azure Kubernetes Service (AKS) gives you managed Kubernetes: the full Kubernetes API without operating the control plane yourself. **Virtual nodes on Azure Container Instances** go a step further, letting your pods run directly on Azure's serverless container platform, with the elasticity and per-second economics of ACI and no VM node pools to size or manage. Whether you already run AKS or want a managed Kubernetes that bursts without node management, this is for you.
+Azure Kubernetes Service (AKS) gives you managed Kubernetes: the full Kubernetes API without operating the control plane yourself. **Virtual nodes on Azure Container Instances** go a step further, letting your pods run directly on Azure's serverless container platform, with the elasticity and per-second economics of ACI and with no capacity planning and no waiting for machines. Whether you already run AKS or want a managed Kubernetes that bursts without node management, this is for you.
 
-In short: **virtual nodes on ACI attach Azure's serverless container platform to your cluster as Kubernetes nodes.** Pods run as Hyper-V isolated containers with effectively unlimited cores and memory, up to 200 pods per node today (`--max-pods`, being raised); run multiple virtual nodes, scaled as replicas, for more. They behave like any other pod: same `kubectl`, Helm, and GitOps.
+In short: **virtual nodes on ACI attach Azure's serverless container platform to your cluster as Kubernetes nodes.** PPods run as Hyper-V isolated containers, sized per pod rather than packed onto a fixed VM, up to 200 pods per virtual node. Run multiple virtual nodes, scaled as replicas, for more. They behave like any other pod: same `kubectl`, Helm, and GitOps.
+
+Kubernetes has always assumed a fixed set of machines underneath it. That assumption shapes everything above it: you size a node pool for a specific VM type in a specific region, you plan for peak rather than for average, and every workload on a node shares the same kernel and the same security boundary. Virtual nodes on ACI relax that assumption, which is what makes both elastic capacity and per container isolation possible without a different Kubernetes.
 
 If you've used the original AKS virtual nodes add-on (Virtual Kubelet based), this is **not a rebrand.** It is a new implementation that integrates far more deeply with Kubernetes, lifts most prior limitations (init containers, persistent volumes, managed identity, richer networking), and adds confidential containers as a first-class capability. The [migration guide on the Apps on Azure blog](https://techcommunity.microsoft.com/blog/appsonazureblog/migrating-to-the-next-generation-of-virtual-nodes-on-azure-container-instances-a/4496565) has the details.
 
-Two things stand out:
-
-1. **Effortless burst capacity.** Schedule up to 200 pods per virtual node in seconds (limit being raised), and run multiple virtual nodes for more, with no node pool sizing and no autoscaler wait. You pay per second for the cores and memory used, with no idle-VM cost.
-2. **Confidential containers.** Hardware-attested, per-container isolation inside a Trusted Execution Environment (TEE) that opens up regulated, sovereign, and AI-on-untrusted-code workloads on AKS. The same per-pod isolation also makes multi-tenancy possible on a single cluster, though safe multi-tenancy still needs additional network boundaries, which Microsoft is documenting.
+Two capabilities carry the rest of this post: effortless burst capacity, and confidential containers.
 
 ---
 
@@ -34,13 +33,13 @@ From the application manifest's perspective, nothing changes. The pod lands on a
 
 ## Virtual nodes on ACI in practice
 
-The rest of this post is hands on. If you have never used Kubernetes, you can still follow it. `kubectl` is the command line tool for talking to a cluster, Helm installs packaged software into one, and a manifest is a text file describing what you want to run. If you have a cluster, everything below runs against it as written.
+The rest of this post is hands on. You do not need to be a Kubernetes expert to follow it. `kubectl` is the command line tool for talking to a cluster, Helm installs packaged software into one, and a manifest is a text file describing what you want to run. If you have a cluster, everything below runs against it as written.
 
 The manifests behind the examples live in a companion demo repo. Setup is documented officially, and you can reproduce this end to end from the ACI virtual nodes documentation and the `microsoft/virtualnodesOnAzureContainerInstances` Helm repo.
 
-One requirement before you start: deploy into a delegated ACI subnet, meaning a subnet in your virtual network set aside for the ACI platform to place containers in.
+One requirement before you start: deploy into a delegated ACI subnet, meaning a subnet in your virtual network set aside for the ACI platform to place containers in. Size it for peak pod count plus headroom, since every pod consumes an address from it for its lifetime.
 
-Demo manifests: https://github.com/hailugebru/AKS-VN2/tree/main
+Demo manifests: https://github.com/hailugebru/AKS-VN2/tree/main(opens in new window) (a personal sample repo, provided as is and not a supported Microsoft artifact).
 
 ### Enable virtual nodes on ACI
 
@@ -74,6 +73,8 @@ tolerations:
 
 That is the entire integration surface. No new API to learn, no separate deployment pipeline, no application changes. `kubectl describe`, `kubectl logs`, and `kubectl exec`, the standard commands for inspecting and troubleshooting, all work as they would anywhere else, including opening a shell inside a container running in a Hyper-V isolated boundary.
 
+Logs and metrics flow through the same path you already use, so existing dashboards and alerts keep working. Confirm the specifics for your monitoring stack against the documentation, since the pods are not running on a VM you own.
+
 <img width="960" height="322" alt="image" src="https://github.com/user-attachments/assets/3f5a6bf7-49d4-4850-927b-fc107f6c3c34" />
 
 > *Image 2: `kubectl get` / `kubectl logs` / `kubectl exec` against a virtual-node-hosted pod.*
@@ -100,7 +101,7 @@ The tool pulls each image, hashes its layers, builds the allow-list, and injects
 
 > *Image 4: `az confcom acipolicygen` pulling and hashing images, emitting the base64 policy.*
 
-Here is why this is a genuinely new isolation primitive rather than a stronger version of an existing one. Most container security policy is enforced by software in the cluster, which means an attacker who compromises the host can potentially bypass it. This policy is enforced by the guest operating system inside the TEE instead. The hardware also produces an attestation report, retrievable from inside the container, which is a cryptographic proof that the workload running is the workload you specified and nothing tampered with it. That is the guarantee regulated industries have been asking for, and increasingly the one AI workloads running untrusted code need too. 
+Here is why this is a genuinely new isolation primitive rather than a stronger version of an existing one. Most container security policy is enforced by software in the cluster, which means an attacker who compromises the host can potentially bypass it. This policy is enforced by the guest operating system inside the TEE instead. The underlying hardware, AMD SEV-SNP, also produces an attestation report, retrievable from inside the container, which is a cryptographic proof that the workload running is the workload you specified and nothing tampered with it. That is the guarantee regulated industries have been asking for, and increasingly the one AI workloads running untrusted code need too. 
 
 Background: [Microsoft Learn: confidential containers on ACI](https://learn.microsoft.com/en-us/azure/container-instances/container-instances-confidential-overview).
 
@@ -113,7 +114,7 @@ Virtual nodes on ACI give containers on Azure two things that were previously ha
 * **Effortless burst capacity** on Azure's serverless container platform, billed per second for the cores and memory used, with no capacity planning and no waiting for machines.
 * **Confidential containers** with hardware attested, per container isolation inside a Trusted Execution Environment.
 
-Virtual nodes are additive, not a replacement. Traditional node pools, NAP, and Virtual Machine Node Pools remain the right home for steady-state, DaemonSet, and persistent-volume workloads. Virtual nodes on ACI absorb the spikes, the short-lived jobs, and the specialized isolation work on top.
+Virtual nodes are additive, not a replacement. Traditional node pools remain the right home for steady state, DaemonSet, and persistent volume workloads, and AKS features such as Node Auto Provisioning and Virtual Machine Node Pools already make that baseline more flexible. Virtual nodes on ACI absorb the spikes, the short-lived jobs, and the specialized isolation work on top.
 
 ### Where to start
 
