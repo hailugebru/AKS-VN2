@@ -8,7 +8,7 @@
 
 Azure Kubernetes Service (AKS) gives you managed Kubernetes: the full Kubernetes API without operating the control plane yourself. **Virtual nodes on Azure Container Instances** go a step further, letting your pods run directly on Azure's serverless container platform, with the elasticity and per-second economics of ACI and with no capacity planning and no waiting for machines. Whether you already run AKS or want a managed Kubernetes that bursts without node management, this is for you.
 
-In short: **virtual nodes on ACI attach Azure's serverless container platform to your cluster as Kubernetes nodes.** PPods run as Hyper-V isolated containers, sized per pod rather than packed onto a fixed VM, up to 200 pods per virtual node. Run multiple virtual nodes, scaled as replicas, for more. They behave like any other pod: same `kubectl`, Helm, and GitOps.
+In short: **virtual nodes on ACI attach Azure's serverless container platform to your cluster as Kubernetes nodes.** Pods run as Hyper-V isolated containers, sized per pod rather than packed onto a fixed VM, up to 200 pods per virtual node. Run multiple virtual nodes, scaled as replicas, for more. They behave like any other pod: same `kubectl`, Helm, and GitOps.
 
 Kubernetes has always assumed a fixed set of machines underneath it. That assumption shapes everything above it: you size a node pool for a specific VM type in a specific region, you plan for peak rather than for average, and every workload on a node shares the same kernel and the same security boundary. Virtual nodes on ACI relax that assumption, which is what makes both elastic capacity and per container isolation possible without a different Kubernetes.
 
