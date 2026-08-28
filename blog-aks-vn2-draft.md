@@ -26,7 +26,7 @@ The cluster's control plane, the component that decides where each container run
 
 <img width="1700" height="800" alt="Diagram showing the AKS control plane scheduling to a system node pool and to virtual nodes, which hand pods off to the ACI serverless platform." src="https://github.com/user-attachments/assets/0d2bab66-e9ca-42b8-8a6b-786f3d59f84d" />
   
-  > *`Diagram showing the AKS control plane scheduling to a system node pool and to virtual nodes, which hand pods off to the ACI serverless platform.*
+  > *Diagram showing the AKS control plane scheduling to a system node pool and to virtual nodes, which hand pods off to the ACI serverless platform.*
 
 From the application manifest's perspective, nothing changes. The pod lands on a virtual node; the virtual node hands it off to ACI. See [Microsoft Learn: virtual nodes on ACI](https://learn.microsoft.com/en-us/azure/container-instances/container-instances-virtual-nodes) for the official capability and current limits.
 
