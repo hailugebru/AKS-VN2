@@ -40,7 +40,7 @@ The manifests behind the examples live in a companion demo repo. Setup is docume
 
 One requirement before you start: deploy into a delegated ACI subnet, meaning a subnet in your virtual network set aside for the ACI platform to place containers in. Size it for peak pod count plus headroom, since every pod consumes an address from it for its lifetime.
 
-Demo manifests: https://github.com/hailugebru/AKS-VN2/tree/main (opens in new window) (a personal sample repo, provided as is and not a supported Microsoft artifact).
+Demo manifests: https://github.com/hailugebru/AKS-VN2/tree/main (a personal sample repo, provided as is and not a supported Microsoft artifact).
 
 ### Enable virtual nodes on ACI
 
