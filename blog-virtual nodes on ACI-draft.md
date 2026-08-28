@@ -84,7 +84,7 @@ Scaling stays trivial. `kubectl scale deployment demo-deployment --replicas=10` 
 
 > *Image 3: `kubectl get pods -o wide` after scaling, every replica on the virtual node, no additional VMs.*
 
-Logs and metrics flow through the same path you already use, so existing dashboards and alerts keep working. Confirm the specifics for your monitoring stack against the documentation, since the pods are not running on a VM you own.
+Logs and metrics flow through the same path you already use, so existing dashboards and alerts keep working. 
 
 ### One annotation makes a pod confidential
 
