@@ -75,8 +75,7 @@ That is the entire integration surface. No new API to learn, no separate deploym
 
 Logs and metrics flow through the same path you already use, so existing dashboards and alerts keep working. Confirm the specifics for your monitoring stack against the documentation, since the pods are not running on a VM you own.
 
-<img width="960" height="322" alt="image" src="https://github.com/user-attachments/assets/3f5a6bf7-49d4-4850-927b-fc107f6c3c34" />
-
+<img width="1402" height="490" alt="kubectl get pods -o wide after scaling, every replica on the virtual node, no additional VMs." src="https://github.com/user-attachments/assets/f7842539-7736-4d4c-89d0-9b87bff6e014" />
 > *Image 2: `kubectl get` / `kubectl logs` / `kubectl exec` against a virtual-node-hosted pod.*
 
 Scaling stays trivial. `kubectl scale deployment demo-deployment --replicas=10` lands every replica on the same virtual node, with no VMSS scale event, no provisioning latency, no climbing node-count chart. The same flow scales just as cleanly to hundreds.
@@ -97,8 +96,7 @@ az confcom acipolicygen --virtual-node-yaml ./hello-world-deployment.yaml
 
 The tool pulls each image, hashes its layers, builds the allow-list, and injects the annotation back into the manifest. `kubectl apply`, and you're done. (`acipolicygen` has prerequisites of its own, including a working Docker installation; see the confcom documentation.)
 
-<img width="1578" height="418" alt="image" src="https://github.com/user-attachments/assets/fe844450-6423-4ad3-baff-b0f4c7c13925" />
-
+<img width="1578" height="418" alt="az confcom acipolicygen pulling and hashing images, emitting the base64 policy." src="https://github.com/user-attachments/assets/fe844450-6423-4ad3-baff-b0f4c7c13925" />
 > *Image 4: `az confcom acipolicygen` pulling and hashing images, emitting the base64 policy.*
 
 Here is why this is a genuinely new isolation primitive rather than a stronger version of an existing one. Most container security policy is enforced by software in the cluster, which means an attacker who compromises the host can potentially bypass it. This policy is enforced by the guest operating system inside the TEE instead. The underlying hardware, AMD SEV-SNP, also produces an attestation report, retrievable from inside the container, which is a cryptographic proof that the workload running is the workload you specified and nothing tampered with it. That is the guarantee regulated industries have been asking for, and increasingly the one AI workloads running untrusted code need too. 
