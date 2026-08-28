@@ -1,6 +1,6 @@
 # Virtual nodes on Azure Container Instances: a new compute layer for AKS
 
-*Effortless burst capacity, confidential containers, and a serverless compute layer for AKS, without leaving the Kubernetes you already know.*
+*Effortless burst capacity, confidential containers, and a serverless place to put them, without leaving the Kubernetes you already know.*
 
 ---
 
@@ -26,7 +26,7 @@ The cluster's control plane, the component that decides where each container run
 
 <img width="1700" height="800" alt="Diagram showing the AKS control plane scheduling to a system node pool and to virtual nodes, which hand pods off to the ACI serverless platform." src="https://github.com/user-attachments/assets/0d2bab66-e9ca-42b8-8a6b-786f3d59f84d" />
   
-  > *Diagram showing the AKS control plane scheduling to a system node pool and to virtual nodes, which hand pods off to the ACI serverless platform.*
+  > *Diagram showing how a pod reaches ACI through a virtual node..*
 
 From the application manifest's perspective, nothing changes. The pod lands on a virtual node; the virtual node hands it off to ACI. See [Microsoft Learn: virtual nodes on ACI](https://learn.microsoft.com/en-us/azure/container-instances/container-instances-virtual-nodes) for the official capability and current limits.
 
@@ -103,6 +103,8 @@ The tool pulls each image, hashes its layers, builds the allow-list, and injects
 > *Image 4: `az confcom acipolicygen` pulling and hashing images, emitting the base64 policy.*
 
 Here is why this is a genuinely new isolation primitive rather than a stronger version of an existing one. Most container security policy is enforced by software in the cluster, which means an attacker who compromises the host can potentially bypass it. This policy is enforced by the guest operating system inside the TEE instead. The underlying hardware, AMD SEV-SNP, also produces an attestation report, retrievable from inside the container, which is a cryptographic proof that the workload running is the workload you specified and nothing tampered with it. That is the guarantee regulated industries have been asking for, and increasingly the one AI workloads running untrusted code need too. 
+
+The same per pod boundary is also what makes multi-tenancy on a single cluster realistic, though multi-tenancy in production still depends on your network and identity boundaries, which sit outside what the isolation layer itself provides.
 
 Background: [Microsoft Learn: confidential containers on ACI](https://learn.microsoft.com/en-us/azure/container-instances/container-instances-confidential-overview).
 
