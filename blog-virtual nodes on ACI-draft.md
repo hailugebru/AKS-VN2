@@ -74,8 +74,6 @@ tolerations:
 
 That is the entire integration surface. No new API to learn, no separate deployment pipeline, no application changes. `kubectl describe`, `kubectl logs`, and `kubectl exec`, the standard commands for inspecting and troubleshooting, all work as they would anywhere else, including opening a shell inside a container running in a Hyper-V isolated boundary.
 
-Logs and metrics flow through the same path you already use, so existing dashboards and alerts keep working. Confirm the specifics for your monitoring stack against the documentation, since the pods are not running on a VM you own.
-
 <img width="1402" height="490" alt="kubectl get pods -o wide after scaling, every replica on the virtual node, no additional VMs." src="https://github.com/user-attachments/assets/f7842539-7736-4d4c-89d0-9b87bff6e014" />
 
 > *Image 2: `kubectl get` / `kubectl logs` / `kubectl exec` against a virtual-node-hosted pod.*
@@ -85,6 +83,8 @@ Scaling stays trivial. `kubectl scale deployment demo-deployment --replicas=10` 
 <img width="1402" height="490" alt="image" src="https://github.com/user-attachments/assets/f7842539-7736-4d4c-89d0-9b87bff6e014" />
 
 > *Image 3: `kubectl get pods -o wide` after scaling, every replica on the virtual node, no additional VMs.*
+
+Logs and metrics flow through the same path you already use, so existing dashboards and alerts keep working. Confirm the specifics for your monitoring stack against the documentation, since the pods are not running on a VM you own.
 
 ### One annotation makes a pod confidential
 
