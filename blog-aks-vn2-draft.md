@@ -77,6 +77,7 @@ That is the entire integration surface. No new API to learn, no separate deploym
 Logs and metrics flow through the same path you already use, so existing dashboards and alerts keep working. Confirm the specifics for your monitoring stack against the documentation, since the pods are not running on a VM you own.
 
 <img width="1402" height="490" alt="kubectl get pods -o wide after scaling, every replica on the virtual node, no additional VMs." src="https://github.com/user-attachments/assets/f7842539-7736-4d4c-89d0-9b87bff6e014" />
+
 > *Image 2: `kubectl get` / `kubectl logs` / `kubectl exec` against a virtual-node-hosted pod.*
 
 Scaling stays trivial. `kubectl scale deployment demo-deployment --replicas=10` lands every replica on the same virtual node, with no VMSS scale event, no provisioning latency, no climbing node-count chart. The same flow scales just as cleanly to hundreds.
