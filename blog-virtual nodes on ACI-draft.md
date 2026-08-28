@@ -6,7 +6,7 @@
 
 ## Meet virtual nodes on ACI
 
-Azure Kubernetes Service (AKS) gives you managed Kubernetes: the full Kubernetes API without operating the control plane yourself. **Virtual nodes on Azure Container Instances** go a step further, letting your pods run directly on Azure's serverless container platform, with the elasticity and per-second economics of ACI and with no capacity planning and no waiting for machines. Whether you already run AKS or want a managed Kubernetes that bursts without node management, this is for you.
+Azure Kubernetes Service (AKS) gives you managed Kubernetes: the full Kubernetes API without operating the control plane yourself. **Virtual nodes on Azure Container Instances** go a step further, letting your pods run directly on Azure's serverless container platform, with the elasticity and with no capacity planning and no waiting for machines. Whether you already run AKS or want a managed Kubernetes that bursts without node management, this is for you.
 
 In short: **virtual nodes on ACI attach Azure's serverless container platform to your cluster as Kubernetes nodes.** Pods run as Hyper-V isolated containers, sized per pod rather than packed onto a fixed VM, up to 200 pods per virtual node. Run multiple virtual nodes, scaled as replicas, for more. They behave like any other pod: same `kubectl`, Helm, and GitOps.
 
@@ -78,7 +78,7 @@ That is the entire integration surface. No new API to learn, no separate deploym
 
 > *Image 2: `kubectl get` / `kubectl logs` / `kubectl exec` against a virtual-node-hosted pod.*
 
-Scaling stays trivial. `kubectl scale deployment demo-deployment --replicas=10` lands every replica on the same virtual node, with no VMSS scale event, no provisioning latency, no climbing node-count chart. The same flow scales just as cleanly to hundreds.
+Scaling stays trivial. `kubectl scale deployment demo-deployment --replicas=10` lands every replica on the same virtual node, with no VMSS scale event, no provisioning latency, no climbing node-count chart. The same flow scales just as cleanly to hundreds. Cost follows the same shape. Each pod is billed per second against the cores and memory it requests, at ACI rates, and billing stops when the pod stops. 
 
 <img width="1402" height="490" alt="image" src="https://github.com/user-attachments/assets/f7842539-7736-4d4c-89d0-9b87bff6e014" />
 
@@ -125,6 +125,6 @@ Virtual nodes are additive, not a replacement. Traditional node pools remain the
 * **Already running AKS?** Add a virtual node to an existing cluster and move one bursty or short lived workload to it. Nothing else changes, and the comparison is immediate.
 * **Evaluating platforms?** The capability that is hard to find elsewhere is the confidential containers path: hardware attested isolation per container, reachable through a standard Kubernetes manifest.
 
-The result: **virtual nodes on ACI expand what AKS can run, with more capacity, stronger isolation, and per-second economics, without changing the Kubernetes operating model you already use.** Same `kubectl`, same manifests, same GitOps. New ceiling.
+The result: **virtual nodes on ACI expand what AKS can run, with more capacity and stronger isolation, without changing the Kubernetes operating model you already use.** Same `kubectl`, same manifests, same GitOps. New ceiling.
 
 For the high-level overview, official documentation, and Helm details, the [migration guide on the Apps on Azure blog](https://techcommunity.microsoft.com/blog/appsonazureblog/migrating-to-the-next-generation-of-virtual-nodes-on-azure-container-instances-a/4496565) and [Microsoft Learn](https://learn.microsoft.com/en-us/azure/container-instances/container-instances-virtual-nodes) are the sources of truth. The companion repo holds the demo manifests used in this post.
