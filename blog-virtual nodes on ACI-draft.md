@@ -120,7 +120,7 @@ Virtual nodes on ACI give containers on Azure two things that were previously ha
 
 Virtual nodes are additive, not a replacement. Traditional node pools remain the right home for steady state, DaemonSet, and persistent volume workloads, and AKS features such as Node Auto Provisioning and Virtual Machine Node Pools already make that baseline more flexible. Virtual nodes on ACI absorb the spikes, the short-lived jobs, and the specialized isolation work on top.
 
-### Where to start
+
 
 * **New to containers on Azure?** Start with a small AKS cluster and add a virtual node from day one. You get a managed Kubernetes environment without having to guess your peak capacity in advance, and the elastic layer is there the first time you need it.
 * **Already running AKS?** Add a virtual node to an existing cluster and move one bursty or short lived workload to it. Nothing else changes, and the comparison is immediate.
@@ -129,3 +129,11 @@ Virtual nodes are additive, not a replacement. Traditional node pools remain the
 The result: **virtual nodes on ACI expand what AKS can run, with more capacity and stronger isolation, without changing the Kubernetes operating model you already use.** Same `kubectl`, same manifests, same GitOps. New ceiling.
 
 For the high-level overview, official documentation, and Helm details, the [migration guide on the Apps on Azure blog](https://techcommunity.microsoft.com/blog/appsonazureblog/migrating-to-the-next-generation-of-virtual-nodes-on-azure-container-instances-a/4496565) and [Microsoft Learn](https://learn.microsoft.com/en-us/azure/container-instances/container-instances-virtual-nodes) are the sources of truth. The companion repo holds the demo manifests used in this post.
+
+### Acknowledgements
+
+I'd like to thank Gurpreet Virdi, Partner Group Engineering Manager, whose guidance shaped this post from the first outline through to publication. Her product leadership ensured this post reflects both the technical depth and the customer value of virtual nodes on ACI.
+ 
+Thanks to Gabriel Fuhrman, Senior Software Engineer, for his detailed technical review. His feedback refined the technical content and significantly improved the accuracy and depth of this post. Christopher Little, Principal CSA, shaped the enterprise adoption perspective, and Adam Sharif, CSA, reviewed the post from the earliest draft.
+ 
+Thanks also to Kirthi Maguluri, Senior Product Manager, and Varun Shandilya, Principal Product Manager, for their review of the final version.
